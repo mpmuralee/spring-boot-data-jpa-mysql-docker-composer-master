@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  mysql-docker-container:
+    image: mysql:5.7
+    container_name: mysql-docker-container
+    ports:
+      - "3306:3306"
+    networks:
+      - my_network
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root123
+      - MYSQL_DATABASE=spring_app_db
+      - MYSQL_USER=app_user
+      - MYSQL_PASSWORD=test123
+    volumes:
+      - /data/mysql
+  spring-boot-jpa-app:
+    image: spring-boot-jpa-image
+    container_name: spring-boot-jpa-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-docker-container:3306/spring_app_db?useSSL=false
+      SPRING_DATASOURCE_USERNAME: app_user
+      SPRING_DATASOURCE_PASSWORD: test123
+      
+    
+    networks:
+      - my_network
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    depends_on:
+      - mysql-docker-container
+    ports:
+      - 8087:8080
+    volumes:
+      - /data/spring-boot-app
+networks:
+  my_network:
+    driver: bridge
